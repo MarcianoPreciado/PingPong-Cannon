@@ -74,10 +74,11 @@ public:
 	double servoAngle(double launchAngle);
 
 	// Finds necessary Servo Angle to Hit a Target:
-	double searchServo(double, double, double);
-	double getServoAngle(double xCoordinate);
+	// Inputs: Minimum angle, Maximum angle, target in [m]
+	double getServoAngle(double, double, double);
 
 	// Performs the reloading action
+	// Both inputs are Servo References
 	int reload(Servo &servo_aim, Servo &servo_loader);
 
 	// Moves the platform to the given coordinate

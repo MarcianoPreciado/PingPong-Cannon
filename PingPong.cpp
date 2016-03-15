@@ -166,7 +166,7 @@ double Cannon::servoAngle(double launchAngle)
 * Finds the necessary launch angle to acheive a target distance.
 * Inputs: ([deg], [deg], [m])
 */
-double Cannon::searchServo(double angleLowerBound, double angleUpperBound, double target) {
+double Cannon::getServoAngle(double angleLowerBound, double angleUpperBound, double target) {
 	double maxError = 0.001; // [m]
 	double midVal = (angleLowerBound + angleUpperBound) / 2 ;	// [deg]
 	double launchAngle;											//x
@@ -187,69 +187,6 @@ double Cannon::searchServo(double angleLowerBound, double angleUpperBound, doubl
 	return launchAngle;
 
 }
-
-
-double Cannon::getServoAngle(double xCoordinate)
-{
-	double smallestError = 0.01;
-	double thetaL;
-	double thetaS;		
-
-	if ((xCoordinate > 1.35) || (xCoordinate < 0.25))	// If specified target is out of range
-	{
-		Serial.print(xCoordinate);
-		Serial.println(" [m] is out of range.");
-		return -1;
-	}
-
-	else
-	{
-		if (xCoordinate <= 1.19) 
-		{
-			for (double launchAngle = 50; launchAngle <= 84; launchAngle += .1)
-			{
-				double LandDistance = landingDistance(launchAngle);
-				double Error = abs(xCoordinate - LandDistance);
-
-				if (Error < smallestError)
-				{
-					smallestError = Error;
-					thetaL = launchAngle;
-
-					if (Error <= 0.01) 
-					{
-						break;
-					}
-				}
-			}
-		}
-
-		else 
-		{
-			for (double launchAngle = 35; launchAngle <= 55; launchAngle += .1)
-			{
-				double LandDistance = landingDistance(launchAngle);
-				double Error = abs(xCoordinate - LandDistance);
-
-				if (Error < smallestError)
-				{
-					smallestError = Error;
-					thetaL = launchAngle;
-
-					if (Error <= 0.01) 
-					{
-						break;
-					}
-				}
-			}
-
-		}
-
-		thetaS = servoAngle(thetaL);
-		}
-		return thetaS;
-	}
-
 
 
 /*
