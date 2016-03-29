@@ -35,6 +35,21 @@
 #include <Servo.h>
 #include "PingPong.h"
 
+#define L1 0.1313
+#define L2 0.0475
+#define L3 0.0880
+#define L4 0.0960
+// d_vector:
+#define d1  0.031
+#define d2  0.19
+#define d3  0.067
+// offsets:
+#define thetaS0  5.9
+#define thetaL0  14.0
+// initial ball velocity:
+#define v0  3.761904022909760
+
+Cannon Wallace(L1, L2, L3, L4, d1, d2, d3, thetaS0, thetaL0, v0);
 Servo cannonServo;
 Servo loaderServo;
 
@@ -43,9 +58,33 @@ void setup() {
   cannonServo.attach(9);
   loaderServo.attach(10);
 
+  pinMode(13, OUTPUT);
+  pinMode(MotorDirectionPin,OUTPUT);
+  pinMode(SolenoidDirectionPin,OUTPUT);
+  pinMode(bumperL,OUTPUT);
+  pinMode(bumperR,OUTPUT);
 }
 
+double targetX;
+double targetZ;
+int angleLowerBound = 33;
+int angleUpperBound = 83;
+double thetaS;
+
 void loop() {
-  
-  delay(10);
+  digitalWrite(13, HIGH);
+  if ( //we are given a target ){
+    thetaS = getServoAngle(angleLowerBound, angleUpperBound, targetX);
+    cannonServo.write(thetaS);
+
+    Wallace.moveTo(targetZ);
+
+    analogWrite(SolenoidPowerPin, fullPower);
+    delay(onTime);
+    analogWrite(SolenoidPowerPin, 0);
+
+    Wallace.reload();
+}
+
+delay(10);
 }

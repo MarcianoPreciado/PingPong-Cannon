@@ -69,6 +69,7 @@ public:
 	double t_land(double v0y, double y0);
 	double x_land(double v0x, double x0, double t_land);
 	double landingDistance(double launchAngle);
+	double landingDistanceIdeal(double launchAngle);
 
 	// Function to find the Servo Angle for a given Launch Angle:
 	double servoAngle(double launchAngle);

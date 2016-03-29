@@ -139,7 +139,16 @@ double Cannon::landingDistance(double launchAngle)
 	double x = x_land(v0x, x0, t);
 	return x;
 }
-
+double Cannon::landingDistanceIdeal(double launchAngle)
+{
+	double c1 = -0.000308842414658;   
+	double c2 = 0.001340898813402;
+	double c3 = 0.514541779183116;
+	double c4 = -89.684287123852357;
+	double c5 = 90.850904444881110;
+	double x = launchAngle;
+	return c1*(x. ^ 3 - c4) + c2*(x. ^ 2 - c4) + c3*(x - c4) + c5;
+}
 
 
 /*
@@ -170,17 +179,17 @@ double Cannon::getServoAngle(double angleLowerBound, double angleUpperBound, dou
 	double maxError = 0.001; // [m]
 	double midVal = (angleLowerBound + angleUpperBound) / 2 ;	// [deg]
 	double launchAngle;											//x
-	double position = landingDistance(midVal);				//yHat
+	double position = landingDistanceIdeal(midVal);				//yHat
 
 	if(fabs(target - position) <= maxError){
 		launchAngle = midVal;
 	}
 	else {
 		if (position > target) {
-			launchAngle = searchServo(midVal, angleUpperBound, target);
+			launchAngle = getServoAngle(midVal, angleUpperBound, target);
 		}
 		else if (position < target) {
-			launchAngle = searchServo(angleLowerBound, midVal, target);
+			launchAngle = getServoAngle(angleLowerBound, midVal, target);
 		}
 		
 	}
