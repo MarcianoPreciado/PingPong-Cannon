@@ -147,7 +147,7 @@ double Cannon::landingDistanceIdeal(double launchAngle)
 	double c4 = -89.684287123852357;
 	double c5 = 90.850904444881110;
 	double x = launchAngle;
-	return c1*(x. ^ 3 - c4) + c2*(x. ^ 2 - c4) + c3*(x - c4) + c5;
+	return c1*(pow(x, 3) - c4) + c2*(pow(x, 2) - c4) + c3*(x - c4) + c5;
 }
 
 
