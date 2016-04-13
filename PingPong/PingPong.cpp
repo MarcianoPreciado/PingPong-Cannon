@@ -1,6 +1,6 @@
 /*
 * Created by: Marciano C. Preciado
-* Latest Update: 03-05-16
+* Latest Update: 04-12-16
 *
 * This libary was created to facilitate the necessary calculations
 * to operate the ME 1010 ping-pong cannon.
@@ -9,25 +9,25 @@
 *	1  RX
 *	2  TX
 *	3  *~
-*	4			Motor Direction		MotorDirectionPin
-*	5  *~		Motor Power			MotorPowerPin
+*	4		Motor Direction		MotorDirectionPin
+*	5  *~		Motor Power		MotorPowerPin
 *	6  *~		Solenoid Power		SolenoidPowerPin
-*	7			Solenoid Direction	SolenoidDirectionPin
+*	7		Solenoid Direction	SolenoidDirectionPin
 *	8
-*	9  *~		Aiming Servo		Servo aim
-*	10 *~		Loader Servo		Servo loader
+*	9  *~		Aiming Servo		cannonServo		(Servo Object)
+*	10 *~		Loader Servo		loaderServo		(Servo Object)
 *	11 *~		Right Bumper		bumperR
-*	12			Left Bumper			bumperL
-*	13
+*	12		Left Bumper		bumperL
+*	13		IR LED			LED
 *
 *	A0
 *	A1
 *	A2
 *	A3
 *	A4
-*	A5			IR Sensor			IR
+*	A5		IR Sensor		IR
 *	A6
-*	A7			Built-In Buttons	btn
+*	A7		Built-In Buttons	btn
 */
 
 #include "PingPong.h" // This is the Library created for this assignment
@@ -54,7 +54,6 @@ Cannon::Cannon(double L1, double L2, double L3, double L4, double d1, double d2,
 	this->v0 = v0;
 }
 
-
 /*
 *				Landing Distance member function:
 *-----------------------------------------------------------
@@ -65,6 +64,7 @@ Cannon::Cannon(double L1, double L2, double L3, double L4, double d1, double d2,
 * Calculates the initial coordinates of the pingpong ball
 * Outputs: x0 and y0 respectively [m]
 */
+
 double Cannon::initialX(double launchAngle)
 {
 	double theta = launchAngle * (3.14159265)/ 180;
@@ -135,10 +135,10 @@ double Cannon::x_land(double v0x, double x0, double t_land)
 
 double Cannon::landingDistanceIdeal(double launchAngle)
 {
-	double c1 = -0.0000024738734;
-	double  c2 = -0.0000835929838;
+	double c1 = -0.0000024738734;				// <---Coefficients to a polynomial model which represents
+	double  c2 = -0.0000835929838;				// a more accurate projectile effected by air resistance
 	double c3 = 0.0089254924129;
-	double c4 = -285.2477198440447;
+	double c4 = -285.2477198440447;	
 	double c5 = -1.1642003159471;
 	double x = launchAngle;
 	return c1*(pow(x, 3) - c4) + c2*(pow(x, 2) - c4) + c3*(x - c4) + c5;
@@ -155,8 +155,8 @@ double Cannon::landingDistanceIdeal(double launchAngle)
 
 double Cannon::servoAngle(double launchAngle)
 {
-	double a = 0.034915161132756;
-	double b = 0.015053057998110 * 1000;
+	double a = 0.034915161132756;				// <---Coefficients to an inverse sinusoidal model which 
+	double b = 0.015053057998110 * 1000;			// represents a thetaL vs. thetaS graph
 	double y_critical = 49.89238602;
 	double x_critical = 54.03235397231884;
 	double thetaS = 1000 / b * asin((launchAngle / 1000 - y_critical/1000) / a) + x_critical;
@@ -172,8 +172,8 @@ double Cannon::getServoAngle(double angleLowerBound, double angleUpperBound, dou
 {
 	double maxError = 0.001; // [m]
 	double midVal = (angleLowerBound + angleUpperBound) / 2 ;	// [deg]
-	double launchAngle;											//x
-	double position = landingDistanceIdeal(midVal);				//yHat
+	double launchAngle;						//x
+	double position = landingDistanceIdeal(midVal);			//yHat
 
 	if(fabs(target - position) <= maxError)
     	{
@@ -193,30 +193,31 @@ double Cannon::getServoAngle(double angleLowerBound, double angleUpperBound, dou
     
 	//Serial.println(launchAngle);
 	return launchAngle;
-
 }
 
 /*
 * Returns Cannon to Reloading Station and Position, and Releases Ball into Cannon.
 */
-int Cannon::reload(Servo &servo_aim,Servo &servo_loader, bool &lastState, int &pos) {
+
+int Cannon::reload(Servo &servo_aim,Servo &servo_loader, bool &lastState, int &pos) 
+{
 	servo_aim.write(35);
-	digitalWrite(MotorDirectionPin,!LEFT);
-	analogWrite(MotorPowerPin, fullPower);
+	digitalWrite(MotorDirectionPin,!LEFT);			// Sets direction of cannon to RIGHT
+	analogWrite(MotorPowerPin, fullPower);			// Moves cannon right
 	Serial.println("Moving to reload");
-	while (!digitalRead(bumperR));	
-	//Serial.println("Reload Break");// Wait until the Cannon reaches the end of the platform.
+	while (!digitalRead(bumperR));				// Does nothing until the right bumper is pressed
+	//Serial.println("Reload Break");
 	delay(10);
-	while (!digitalRead(bumperR));
+	while (!digitalRead(bumperR));				// (Debounce)			
 	Serial.println("Reload Break");
-	delay(25);								// Apply the break.
-	digitalWrite(MotorDirectionPin, LEFT);
-	analogWrite(MotorPowerPin, fullPower);
+	delay(25);						// Apply the break.
+	digitalWrite(MotorDirectionPin, LEFT);			// Changes direction to LEFT
+	analogWrite(MotorPowerPin, fullPower);			// Moves cannon slightly left to unpress button
 	delay(50);
 	analogWrite(MotorPowerPin, 0);
 	pos = 38;
 	lastState = (analogRead(IR) > 500);
-											// Reload the Cannon.
+								// Reload the Cannon.
 	delay(90);
 	servo_loader.write(0);
 	delay(500);
@@ -231,27 +232,32 @@ int Cannon::reload(Servo &servo_aim,Servo &servo_loader, bool &lastState, int &p
 * Moves the Cannon to the desired Z Coordinate
 */
 
-int Cannon::moveTo(int zCoordinate, bool &lastState, int &pos) {
-
+int Cannon::moveTo(int zCoordinate, bool &lastState, int &pos) 
+{
 	const bool white = 0;
 	const bool black = 1;
 	bool state = (analogRead(IR) > 500);
 	int thresh = 374;
 	int motorPower = 255;
 	bool DIR;
-	if (zCoordinate < pos) {
+	if (zCoordinate < pos) 
+	{
 		digitalWrite(MotorDirectionPin, LEFT);
 		DIR = LEFT;
 	}
-	if (zCoordinate > pos){
+	if (zCoordinate > pos)
+	{
 		digitalWrite(MotorDirectionPin, !LEFT);
 	DIR = !LEFT;
-}
+	}
 	analogWrite(MotorPowerPin, motorPower);
-	//Count the black strips until at desired location.
-	while (pos != zCoordinate) {
+	
+	//Count the black stripes until at desired location.
+	while (pos != zCoordinate) 
+	{
 		delay(10);
-		if ((analogRead(IR) > thresh) && (state == white) && (lastState == state)) {
+		if ((analogRead(IR) > thresh) && (state == white) && (lastState == state)) 
+		{
 			state = black;
 			if (DIR)
 				pos--;
@@ -262,7 +268,8 @@ int Cannon::moveTo(int zCoordinate, bool &lastState, int &pos) {
 			delay(1);
 		}
 
-		if ((analogRead(IR) < thresh) && (state == black) && (lastState == state)) {
+		if ((analogRead(IR) < thresh) && (state == black) && (lastState == state)) 
+		{
 			state = white;
 			if (DIR)
 				pos--;
@@ -272,22 +279,24 @@ int Cannon::moveTo(int zCoordinate, bool &lastState, int &pos) {
 			Serial.println(pos);
 			delay(1);
 		}
-		if ((digitalRead(bumperL) == HIGH) && (DIR)) {
-			
+		if ((digitalRead(bumperL) == HIGH) && (DIR)) 
+		{
 			Serial.println("Left Breaking");
 			pos = 0;
 			break;
 		}
-		if ((digitalRead(bumperR) == HIGH) && !DIR) {
-
+		if ((digitalRead(bumperR) == HIGH) && !DIR) 
+		{
 			Serial.println("Right Breaking");
 			pos = 38;
 			break;
 		}
 		lastState = state;
 	}
+	
 	// Apply the break.
-	if (state == white) {
+	if (state == white) 
+	{
 		delay(270);
 	}
 	delay(85);
@@ -299,23 +308,23 @@ int Cannon::moveTo(int zCoordinate, bool &lastState, int &pos) {
 	return 0;
 }
 
-
 /*
 * Moves the Cannon to the home position
 */
+
 int Cannon::returnHome(bool &lastState, int &pos)
 {
-	digitalWrite(MotorDirectionPin, LEFT);
-	analogWrite(MotorPowerPin, fullPower);
-	while (!digitalRead(bumperL));
+	digitalWrite(MotorDirectionPin, LEFT);		// Changes direction to left
+	analogWrite(MotorPowerPin, fullPower);		// Moves cannon left
+	while (!digitalRead(bumperL));			// Wait until the bumper is being pressed
 	Serial.println("Breaking");
-	analogWrite(MotorPowerPin, 0);
+	analogWrite(MotorPowerPin, 0);			// Stops cannon
 	delay(5);
-	digitalWrite(MotorDirectionPin, !LEFT);
-	analogWrite(MotorPowerPin, fullPower);
+	digitalWrite(MotorDirectionPin, !LEFT);		// Changes direction to right
+	analogWrite(MotorPowerPin, fullPower);		// Moves cannon slightly right to unpress botton
 	delay(50);
-	analogWrite(MotorPowerPin, 0);
+	analogWrite(MotorPowerPin, 0);			// Stops cannon
 	pos = 0;
-	lastState = (analogRead(IR) > 500);
+	lastState = (analogRead(IR) > 500);		// Updates which color the LED senses
 	return 0;
 }
