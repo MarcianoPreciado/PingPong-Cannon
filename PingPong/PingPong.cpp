@@ -9,16 +9,16 @@
 *	1  RX
 *	2  TX
 *	3  *~
-*	4		Motor Direction		MotorDirectionPin
+*	4			Motor Direction		MotorDirectionPin
 *	5  *~		Motor Power		MotorPowerPin
 *	6  *~		Solenoid Power		SolenoidPowerPin
-*	7		Solenoid Direction	SolenoidDirectionPin
+*	7			Solenoid Direction	SolenoidDirectionPin
 *	8
 *	9  *~		Aiming Servo		cannonServo		(Servo Object)
 *	10 *~		Loader Servo		loaderServo		(Servo Object)
 *	11 *~		Right Bumper		bumperR
-*	12		Left Bumper		bumperL
-*	13		IR LED			LED
+*	12			Left Bumper		bumperL
+*	13			IR LED			LED
 *
 *	A0
 *	A1
@@ -314,10 +314,11 @@ int Cannon::moveTo(int zCoordinate, bool &lastState, int &pos)
 
 int Cannon::returnHome(bool &lastState, int &pos)
 {
+	Serial.println("Going Home");
 	digitalWrite(MotorDirectionPin, LEFT);		// Changes direction to left
 	analogWrite(MotorPowerPin, fullPower);		// Moves cannon left
 	while (!digitalRead(bumperL));			// Wait until the bumper is being pressed
-	Serial.println("Breaking");
+	Serial.println("Breaking (AT HOME)");
 	analogWrite(MotorPowerPin, 0);			// Stops cannon
 	delay(5);
 	digitalWrite(MotorDirectionPin, !LEFT);		// Changes direction to right
