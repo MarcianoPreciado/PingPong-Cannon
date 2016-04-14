@@ -86,6 +86,7 @@ void setup() {
     Serial.println(". ");
 
   }
+  Wallace.returnHome(lastState, pos);
   Serial.println("Initializing IR LED Protocol");
   digitalWrite(LED, HIGH);
   delay(1000);
@@ -101,28 +102,35 @@ void setup() {
     Serial.print(servoAngles[i]);
     Serial.println(" [deg]");
   }
-  Serial.println("");
-  
+
   cannonServo.attach(9);            // attach servos
   loaderServo.attach(10);
-  Wallace.returnHome(lastState, pos); 
+  loaderServo.write(20);
+  cannonServo.write(35);
+    Serial.println("");
 }
 
 void loop() {
-  int j;
-  for (j = 0; j < 6; j++) {
-    Wallace.moveTo(encoderPos[j], lastState, pos);
-    cannonServo.write(servoAngles[j]);
-    delay(350);
-    analogWrite(SolenoidPowerPin, fullPower);
-    delay(onTime);
-    analogWrite(SolenoidPowerPin, 0);
-    Wallace.reload(cannonServo, loaderServo, lastState, pos);
-  }
+//  int j;
+//  cannonServo.write(servoAngles[1]);
+//  Wallace.moveTo(encoderPos[0], lastState, pos);
+//  analogWrite(SolenoidPowerPin, fullPower);
+//  delay(onTime);
+//  analogWrite(SolenoidPowerPin, 0);
+//  for (j = 1; j < 6; j++) {
+//    Wallace.reload(cannonServo, loaderServo, lastState, pos);
+//    Wallace.moveTo(32, lastState, pos);
+//    cannonServo.write(servoAngles[j]);
+//    Wallace.moveTo(encoderPos[j], lastState, pos);
+//    analogWrite(SolenoidPowerPin, fullPower);
+//    delay(onTime);
+//    analogWrite(SolenoidPowerPin, 0);
+//  }
+//
+//  Wallace.returnHome(lastState, pos);           // finish game
+//  digitalWrite(LED, HIGH);
+//  delay(1000);
+//  digitalWrite(LED, LOW);
 
-  Wallace.returnHome(lastState, pos);           // finish game
-  digitalWrite(LED, HIGH);
-  delay(1000);
-  digitalWrite(LED, LOW);
 
 }
