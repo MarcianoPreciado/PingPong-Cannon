@@ -14,7 +14,7 @@ fopen(RomeoCOM);
 % Wait for ready signal from Romeo
 
 % fread(RomeoCOM,1);
-
+RGBarray = imread('blue_B1.bmp');
 disp('Click on a target rectangle');
 targetRGB = ColorPicker(RGBarray)
 [ centroidRows,centroidCols,modImage ] = FindAllTargetCentroids( RGBarray,targetRGB );

@@ -65,7 +65,7 @@ void setup() {
   Serial.write(97);                 // send 'a' confirmation value
   double launchAngles[6];
   int i;
-  while(Serial.available() < 0);
+  while(Serial.available() <= 0);
   Serial.read();
   //for (i = 0; i < 6; i++) {
     //while (Serial.available() < 2); // waiting for coordinates to come through
@@ -77,6 +77,8 @@ void setup() {
   
   cannonServo.attach(9);            // attach servos
   loaderServo.attach(10);
+  loaderServo.write(20);
+  cannonServo.write(35);
   Wallace.returnHome(lastState, pos);
   digitalWrite(LED, HIGH);
   delay(1000);
@@ -86,6 +88,8 @@ void setup() {
 void loop() {
 int j;
   for (j = 0; j < 6; j++) {
+    Serial.println(coordinates[j][0]);
+    Serial.println(servoAngles[j]);
     Wallace.moveTo(coordinates[j][1], lastState, pos);
     cannonServo.write(servoAngles[j]);
     delay(350);
