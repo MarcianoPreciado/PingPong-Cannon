@@ -40,108 +40,27 @@
 * Initializes all permanent properties of Cannon Object
 */
 
-Cannon::Cannon(double L1, double L2, double L3, double L4, double d1, double d2, double d3, double thetaS0, double thetaL0, double v0)
+Cannon::Cannon(void)
 {
-	this->L1 = L1;
-	this->L2 = L2;
-	this->L3 = L3;
-	this->L4 = L4;
-	this->d1 = d1;
-	this->d2 = d2;
-	this->d3 = d3;
-	this->thetaS0 = thetaS0;
-	this->thetaL0 = thetaL0;
-	this->v0 = v0;
+	
 }
 
-/*
-*				Landing Distance member function:
-*-----------------------------------------------------------
-*
-*/
-
-/*
-* Calculates the initial coordinates of the pingpong ball
-* Outputs: x0 and y0 respectively [m]
-*/
-
-double Cannon::initialX(double launchAngle)
-{
-	double theta = launchAngle * (3.14159265)/ 180;
-	double x0 = ((this->d2) * cos(theta)) - ((this->d3) * sin(theta));
-	return x0;
-}
-
-double Cannon::initialY(double launchAngle)
-{
-	double theta = launchAngle * (3.14159265) / 180;
-	double d1 = this->d1;
-	double d2 = this->d2;
-	double d3 = this->d3;
-	double y0 = d1 + (d2 * sin(theta)) + (d3*cos(theta));
-	return y0;
-}
-
-/*
-* Calculates the initial velocity components of the pingpong ball
-* Outputs: v0x and v0y respectively [m/s]
-*/
-
-double Cannon::initialVelocityX(double launchAngle)
-{
-	double theta = launchAngle * (3.14159265) / 180;
-	double v0x = this->v0 * cos(theta);
-	return v0x;
-}
-
-double Cannon::initialVelocityY(double launchAngle)
-{
-	double theta = launchAngle * (3.14159265) / 180;
-	double v0y = this->v0 * sin(theta);
-	return v0y;
-}
-
-/*
-* Calculates the time at which the ball's centroid is ground level
-* Outputs: Landing Time [sec] t_land
-*/
-
-double Cannon::t_land(double v0y, double y0)
-{
-	const double g = -9.818216325797522;
-	double a = g / 2;
-	double b = v0y;
-	double c = y0;
-	double t = (-b - sqrt(pow(b,2) - (4 * a * c))) / (2 * a);
-	return t;
-}
-
-/*
-* Calculates horizontal distance travelled before reaching ground level
-* Outputs: horizontal distance, x_land [m]
-*/
-
-double Cannon::x_land(double v0x, double x0, double t_land)
-{
-	double k = 1.421000056204362;
-	double x = x0 + (v0x / k) * (1 - exp(-k*t_land));
-	return x;
-}
 
 /*
 * Final Function [[LANDING DISTANCE]]
-* Combines all members of Landing Distance member function
+* The most accurate function within reason to model our
+* launch angle to distance data
 */
 
 double Cannon::landingDistanceIdeal(double launchAngle)
 {
-	double c1 = -0.0000024738734;				// <---Coefficients to a polynomial model which represents
-	double  c2 = -0.0000835929838;				// a more accurate projectile effected by air resistance
+	double c1 = -0.0000024738734;												// <---Coefficients to a polynomial model which represents
+	double  c2 = -0.0000835929838;												// a more accurate projectile effected by air resistance
 	double c3 = 0.0089254924129;
 	double c4 = -285.2477198440447;	
 	double c5 = -1.1642003159471;
 	double x = launchAngle;
-	return c1*(pow(x, 3) - c4) + c2*(pow(x, 2) - c4) + c3*(x - c4) + c5;
+	return c1*(pow(x, 3) - c4) + c2*(pow(x, 2) - c4) + c3*(x - c4) + c5;		// 5th degree poynomial representation of launchAngle -> landing distance
 }
 
 /*
@@ -151,12 +70,13 @@ double Cannon::landingDistanceIdeal(double launchAngle)
 
 /* 
 * Finds the corresponding thetaL for a given thetaS [deg]
+* Uses an inverse sinusoidal model of the taken data.
 */
 
 double Cannon::servoAngle(double launchAngle)
 {
-	double a = 0.034915161132756;				// <---Coefficients to an inverse sinusoidal model which 
-	double b = 0.015053057998110 * 1000;			// represents a thetaL vs. thetaS graph
+	double a = 0.034915161132756;					// <---Coefficients to an inverse sinusoidal model which 
+	double b = 0.015053057998110 * 1000;			// represents a thetaL vs. thetaS function
 	double y_critical = 49.89238602;
 	double x_critical = 54.03235397231884;
 	double thetaS = 1000 / b * asin((launchAngle / 1000 - y_critical/1000) / a) + x_critical;
@@ -168,7 +88,7 @@ double Cannon::servoAngle(double launchAngle)
 * Inputs: ([deg], [deg], [m])
 */
 
-double Cannon::getServoAngle(double angleLowerBound, double angleUpperBound, double target)
+double Cannon::getLaunchAngle(double angleLowerBound, double angleUpperBound, double target)
 {
 	double maxError = 0.001; // [m]
 	double midVal = (angleLowerBound + angleUpperBound) / 2 ;	// [deg]
@@ -329,3 +249,106 @@ int Cannon::returnHome(bool &lastState, int &pos)
 	lastState = (analogRead(IR) > 500);		// Updates which color the LED senses
 	return 0;
 }
+
+
+/*
+* ---------------------------------------------------------------------------------
+*	ARCHIVED PREVIOUS FUNCTIONS  BASED ON THE DERIVED MECHATRONIC FUNCTIONS GIVEN
+* ---------------------------------------------------------------------------------
+*/
+
+/*
+*        Landing Distance member function:
+*-----------------------------------------------------------
+*
+*/
+
+/*
+* Cannon Constructor:
+* Initializes all permanent properties of Cannon Object
+*/
+
+/*
+Cannon::Cannon(double L1, double L2, double L3, double L4, double d1, double d2, double d3, double thetaS0, double thetaL0, double v0)
+{
+	this->L1 = L1;
+	this->L2 = L2;
+	this->L3 = L3;
+	this->L4 = L4;
+	this->d1 = d1;
+	this->d2 = d2;
+	this->d3 = d3;
+	this->thetaS0 = thetaS0;
+	this->thetaL0 = thetaL0;
+	this->v0 = v0;
+}
+*/
+
+/*
+* Calculates the initial coordinates of the pingpong ball
+* Outputs: x0 and y0 respectively [m]
+*/
+
+double Cannon::initialX(double launchAngle)
+{
+	double theta = launchAngle * (3.14159265) / 180;
+	double x0 = ((this->d2) * cos(theta)) - ((this->d3) * sin(theta));
+	return x0;
+}
+
+double Cannon::initialY(double launchAngle)
+{
+	double theta = launchAngle * (3.14159265) / 180;
+	double d1 = this->d1;
+	double d2 = this->d2;
+	double d3 = this->d3;
+	double y0 = d1 + (d2 * sin(theta)) + (d3*cos(theta));
+	return y0;
+}
+
+/*
+* Calculates the initial velocity components of the pingpong ball
+* Outputs: v0x and v0y respectively [m/s]
+*/
+
+double Cannon::initialVelocityX(double launchAngle)
+{
+	double theta = launchAngle * (3.14159265) / 180;
+	double v0x = this->v0 * cos(theta);
+	return v0x;
+}
+
+double Cannon::initialVelocityY(double launchAngle)
+{
+	double theta = launchAngle * (3.14159265) / 180;
+	double v0y = this->v0 * sin(theta);
+	return v0y;
+}
+
+/*
+* Calculates the time at which the ball's centroid is ground level
+* Outputs: Landing Time [sec] t_land
+*/
+
+double Cannon::t_land(double v0y, double y0)
+{
+	const double g = -9.818216325797522;
+	double a = g / 2;
+	double b = v0y;
+	double c = y0;
+	double t = (-b - sqrt(pow(b, 2) - (4 * a * c))) / (2 * a);
+	return t;
+}
+
+/*
+* Calculates horizontal distance travelled before reaching ground level
+* Outputs: horizontal distance, x_land [m]
+*/
+
+double Cannon::x_land(double v0x, double x0, double t_land)
+{
+	double k = 1.421000056204362;
+	double x = x0 + (v0x / k) * (1 - exp(-k*t_land));
+	return x;
+}
+

@@ -60,15 +60,9 @@ class Cannon{
 public:
 
 	// Preparations for cannon:
-	Cannon(double L1, double L2, double L3, double L4, double d1, double d2, double d3, double thetaS0, double thetaL0, double v0);
-	// LandingDistance member function:
-	double initialX(double launchAngle);
-	double initialY(double launchAngle);
-	double initialVelocityX(double launchAngle);
-	double initialVelocityY(double launchAngle);
-	double t_land(double v0y, double y0);
-	double x_land(double v0x, double x0, double t_land);
-	double landingDistance(double launchAngle);
+	Cannon(void); //Constructor
+	
+	// Function to find an accurate landing distance for a given launch angle:
 	double landingDistanceIdeal(double launchAngle);
 
 	// Function to find the Servo Angle for a given Launch Angle:
@@ -76,7 +70,7 @@ public:
 
 	// Finds necessary Servo Angle to Hit a Target:
 	// Inputs: Minimum angle, Maximum angle, target in [m]
-	double getServoAngle(double, double, double);
+	double getLaunchAngle(double, double, double);
 
 	// Performs the reloading action
 	// Both inputs are Servo References
@@ -88,6 +82,23 @@ public:
 	//Moves the platform to the home position
 	int returnHome(bool &lastState, int &pos);
 
+
+	/*
+	* ---------------------------------------------------------------------------------
+	*	ARCHIVED PREVIOUS FUNCTIONS  BASED ON THE DERIVED MECHATRONIC FUNCTIONS GIVEN
+	* ---------------------------------------------------------------------------------
+	*/
+	//Constructor
+	//Cannon(double L1, double L2, double L3, double L4, double d1, double d2, double d3, double thetaS0, double thetaL0, double v0);
+
+	// LandingDistance member function:
+	double initialX(double launchAngle);
+	double initialY(double launchAngle);
+	double initialVelocityX(double launchAngle);
+	double initialVelocityY(double launchAngle);
+	double t_land(double v0y, double y0);
+	double x_land(double v0x, double x0, double t_land);
+	//double landingDistance(double launchAngle);
 
 
 private:

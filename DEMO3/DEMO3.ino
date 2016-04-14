@@ -109,7 +109,7 @@ void setup() {
 
 
   for (i = 0; i < 6; i++) {
-    launchAngles[i] = Wallace.getServoAngle(angleLowerBound, angleUpperBound, xTarget_m[i]);
+    launchAngles[i] = Wallace.getLaunchAngle(angleLowerBound, angleUpperBound, xTarget_m[i]);
     servoAngles[i] = Wallace.servoAngle(launchAngles[i]);
     Serial.print("Target dist = ");
     Serial.print( xTarget_m[i]);

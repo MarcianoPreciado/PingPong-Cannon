@@ -25,11 +25,13 @@ PingPong KEYWORD1
 
 servoAngle			KEYWORD2
 
-getServoAngle		KEYWORD2
+getLaunchAngle		KEYWORD2
 
 reload				KEYWORD2
 
 moveTo				KEYWORD2
+
+returnHome			KEYWORD2
 
 getFiringAngle 		KEYWORD2
 

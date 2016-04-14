@@ -89,7 +89,7 @@ void setup() {
     //while (Serial.available() < 2); // waiting for coordinates to come through
     //coordinates[i][0] = Serial.read();
     //coordinates[i][1] = Serial.read();
-    //launchAngles[i] = Wallace.getServoAngle(angleLowerBound, angleUpperBound, coordinates[i][0]);
+    //launchAngles[i] = Wallace.getLaunchAngle(angleLowerBound, angleUpperBound, coordinates[i][0]);
     //servoAngles[i] = Wallace.servoAngle(launchAngles[i]);
   //}
   
