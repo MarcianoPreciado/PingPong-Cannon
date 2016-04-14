@@ -1,6 +1,6 @@
 /*
-  Created by: Marciano C. Preciado
-  Latest Update: 03-05-16
+  Created by: Marciano C. Preciado, Matthew D. Ludlow
+  Latest Update: 04-14-16
 
   This libary was created to facilitate the necessary calculations
   to operate the ME 1010 ping-pong cannon.
@@ -35,29 +35,13 @@
 #include <Servo.h>
 #include "PingPong.h"
 
-#define L1 0.1313
-#define L2 0.0475
-#define L3 0.0880
-#define L4 0.0960
-// d_vector:
-#define d1  0.031
-#define d2  0.19
-#define d3  0.067
-// offsets:
-#define thetaS0  5.9
-#define thetaL0  14.0
-// initial ball velocity:
-#define v0  3.761904022909760
 #define pi 3.1415923565
-Cannon Wallace(L1, L2, L3, L4, d1, d2, d3, thetaS0, thetaL0, v0);
+Cannon Wallace;
 Servo cannonServo;
 Servo loaderServo;
 
 const int LED = 13;
 
-double targetX;
-double targetZ;
-byte junk;
 int angleLowerBound = 33;
 int angleUpperBound = 83;
 byte k = 0;

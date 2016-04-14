@@ -103,11 +103,11 @@ double Cannon::getLaunchAngle(double angleLowerBound, double angleUpperBound, do
     	{
 	if (position > target)
         {
-        	launchAngle = getServoAngle(midVal, angleUpperBound, target);
+        	launchAngle = getLaunchAngle(midVal, angleUpperBound, target);
 	}
 	else if (position < target) 
 	{
-		launchAngle = getServoAngle(angleLowerBound, midVal, target);
+		launchAngle = getLaunchAngle(angleLowerBound, midVal, target);
 	}
 	}
     
