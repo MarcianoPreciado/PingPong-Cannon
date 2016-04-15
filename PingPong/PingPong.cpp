@@ -1,6 +1,6 @@
 /*
-* Created by: Marciano C. Preciado
-* Latest Update: 04-12-16
+* Created by: Marciano C. Preciado, Matt D. Ludlow
+* Latest Update: 04-15-16
 *
 * This libary was created to facilitate the necessary calculations
 * to operate the ME 1010 ping-pong cannon.
@@ -17,17 +17,17 @@
 *	9  *~		Aiming Servo		cannonServo		(Servo Object)
 *	10 *~		Loader Servo		loaderServo		(Servo Object)
 *	11 *~		Right Bumper		bumperR
-*	12			Left Bumper		bumperL
-*	13			IR LED			LED
+*	12			Left Bumper			bumperL
+*	13			IR LED				LED
 *
 *	A0
 *	A1
 *	A2
 *	A3
 *	A4
-*	A5		IR Sensor		IR
+*	A5		IR Sensor				IR
 *	A6
-*	A7		Built-In Buttons	btn
+*	A7		Built-In Buttons		btn
 */
 
 #include "PingPong.h" // This is the Library created for this assignment
@@ -37,7 +37,7 @@
 
 /*
 * Cannon Constructor:
-* Initializes all permanent properties of Cannon Object
+* Initializes Cannon Object
 */
 
 Cannon::Cannon(void)
@@ -50,14 +50,29 @@ Cannon::Cannon(void)
 * Final Function [[LANDING DISTANCE]]
 * The most accurate function within reason to model our
 * launch angle to distance data
+*
+* There are two versions. They are designed so that we can acheive a deep
+* dive angle into the targets at all available distances, this requires two different
+* functions for two different solenoid powers.
 */
 
-double Cannon::landingDistanceIdeal(double launchAngle)
+double Cannon::landingDistanceIdealHIGH(double launchAngle)
 {
 	double c1 = -0.0000024738734;												// <---Coefficients to a polynomial model which represents
 	double  c2 = -0.0000835929838;												// a more accurate projectile effected by air resistance
 	double c3 = 0.0089254924129;
 	double c4 = -285.2477198440447;	
+	double c5 = -1.1642003159471;
+	double x = launchAngle;
+	return c1*(pow(x, 3) - c4) + c2*(pow(x, 2) - c4) + c3*(x - c4) + c5;		// 5th degree poynomial representation of launchAngle -> landing distance
+}
+
+double Cannon::landingDistanceIdealLOW(double launchAngle)
+{
+	double c1 = -0.0000024738734;												// <---Coefficients to a polynomial model which represents
+	double  c2 = -0.0000835929838;												// a more accurate projectile effected by air resistance
+	double c3 = 0.0089254924129;
+	double c4 = -285.2477198440447;
 	double c5 = -1.1642003159471;
 	double x = launchAngle;
 	return c1*(pow(x, 3) - c4) + c2*(pow(x, 2) - c4) + c3*(x - c4) + c5;		// 5th degree poynomial representation of launchAngle -> landing distance
@@ -84,7 +99,7 @@ double Cannon::servoAngle(double launchAngle)
 }
 
 /*
-* Finds the necessary launch angle to acheive a target distance.
+* Finds the necessary launch angle to acheive a target distance using recursive searching.
 * Inputs: ([deg], [deg], [m])
 */
 
@@ -93,7 +108,11 @@ double Cannon::getLaunchAngle(double angleLowerBound, double angleUpperBound, do
 	double maxError = 0.001; // [m]
 	double midVal = (angleLowerBound + angleUpperBound) / 2 ;	// [deg]
 	double launchAngle;						//x
-	double position = landingDistanceIdeal(midVal);			//yHat
+	// Choosing correct trajectory function
+	if (target <= 1.09)
+		double position = landingDistanceIdealLOW(midVal);			//yHat
+	else
+		double position = landinDistanceIdealHIGH(midVal);
 
 	if(fabs(target - position) <= maxError)
     	{
@@ -110,7 +129,6 @@ double Cannon::getLaunchAngle(double angleLowerBound, double angleUpperBound, do
 		launchAngle = getLaunchAngle(angleLowerBound, midVal, target);
 	}
 	}
-    
 	//Serial.println(launchAngle);
 	return launchAngle;
 }
@@ -230,6 +248,7 @@ int Cannon::moveTo(int zCoordinate, bool &lastState, int &pos)
 
 /*
 * Moves the Cannon to the home position
+* Inputs( reference to the last color bar recorded, reference to last position recorded)
 */
 
 int Cannon::returnHome(bool &lastState, int &pos)
@@ -253,7 +272,8 @@ int Cannon::returnHome(bool &lastState, int &pos)
 
 /*
 * ---------------------------------------------------------------------------------
-*	ARCHIVED PREVIOUS FUNCTIONS  BASED ON THE DERIVED MECHATRONIC FUNCTIONS GIVEN
+*	ARCHIVED PREVIOUS FUNCTIONS BASED ON THE DERIVED MECHATRONIC FUNCTIONS GIVEN
+*							None are in use anymore
 * ---------------------------------------------------------------------------------
 */
 

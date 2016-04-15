@@ -1,6 +1,6 @@
 /*
-  Created by: Marciano C. Preciado
-  Latest Update: 03-05-16
+  Created by: Marciano C. Preciado, Matt D. Ludlow
+  Latest Update: 04-15-16
 
   This libary was created to facilitate the necessary calculations
   to operate the ME 1010 ping-pong cannon.
@@ -35,35 +35,24 @@
 #include <Servo.h>
 #include "PingPong.h"
 
-#define L1 0.1313
-#define L2 0.0475
-#define L3 0.0880
-#define L4 0.0960
-// d_vector:
-#define d1  0.031
-#define d2  0.19
-#define d3  0.067
-// offsets:
-#define thetaS0  5.9
-#define thetaL0  14.0
-// initial ball velocity:
-#define v0  3.761904022909760
-
-Cannon Wallace(L1, L2, L3, L4, d1, d2, d3, thetaS0, thetaL0, v0);
+#define pi 3.1415923565
+Cannon Wallace;
 Servo cannonServo;
 Servo loaderServo;
 
 const int LED = 13;
 
-double targetX;
-double targetZ;
-byte junk;
 int angleLowerBound = 33;
 int angleUpperBound = 83;
 byte k = 0;
 
-double coordinates[6][2];
-double servoAngles[6];
+double encoderPos[6];
+double xTarget_HB[6];
+double xTarget_LB[6];
+double xTarget_mm[6];
+double xTarget_m[6];
+int solenoidPower[6] = {255, 255, 255, 255, 255, 255}; //default power is HIGH
+int servoAngles[6];
 int pos;
 bool lastState;
 
@@ -77,32 +66,70 @@ void setup() {
   Serial.begin(9600);               // initialize communication
   Serial.write(97);                 // send 'a' confirmation value
   double launchAngles[6];
-  int i;
-  for (i = 0; i < 6; i++) {
-    while (Serial.available() < 3); // waiting for coordinates to come through
 
-    launchAngles[i] = Wallace.getServoAngle(angleLowerBound, angleUpperBound, coordinates[i][0]);
-    servoAngles[i] = Wallace.servoAngle(launchAngles[i]);
+  int i;
+
+  for (i = 0; i < 6; i++) {
+    while (Serial.available() < 3);
+    encoderPos[i] = Serial.read();
+    xTarget_HB[i] = Serial.read();
+    xTarget_LB[i] = Serial.read();
+
+    xTarget_mm[i] = (256 * xTarget_HB[i]) + xTarget_LB[i];
+    xTarget_m[i] = (xTarget_mm[i] / 1000);
+
+    Serial.print("For target ");
+    Serial.print(i + 1);
+    Serial.print(",drive to stripe ");
+    Serial.print(encoderPos[i]);
+    Serial.print(", and aim for ");
+    Serial.print(xTarget_m[i], 3);
+    Serial.println(". ");
+
   }
-  
-  cannonServo.attach(9);            // attach servos
-  loaderServo.attach(10);
+
   Wallace.returnHome(lastState, pos);
+  Serial.println("Initializing IR LED Protocol");
   digitalWrite(LED, HIGH);
   delay(1000);
   digitalWrite(LED, LOW);
+
+  for (i = 0; i < 6; i++) {
+    // If the desired distance is less than 109 cm, rewrite for LOW power
+    // otherwise, use the default HIGH power
+    if (xTarget_m[i] < 1.09) {
+      solenoidPower[i] = 240;
+    }
+    launchAngles[i] = Wallace.getLaunchAngle(angleLowerBound, angleUpperBound, xTarget_m[i]);
+    servoAngles[i] = Wallace.servoAngle(launchAngles[i]);
+    Serial.print("Target dist = ");
+    Serial.print( xTarget_m[i]);
+    Serial.print(" [m] ---> Servo angle = ");
+    Serial.print(servoAngles[i]);
+    Serial.println(" [deg]");
+  }
+
+  cannonServo.attach(9);            // attach servos
+  loaderServo.attach(10);
+  loaderServo.write(20);
+  cannonServo.write(35);
 }
 
 void loop() {
-int j;
-  for (j = 0; j < 6; j++) {
-    Wallace.moveTo(coordinates[j][1], lastState, pos);
+  int j;
+  cannonServo.write(servoAngles[0]);
+  Wallace.moveTo(encoderPos[0], lastState, pos);
+  analogWrite(SolenoidPowerPin, solenoidPower[0]);
+  delay(onTime);
+  analogWrite(SolenoidPowerPin, 0);
+  for (j = 1; j < 6; j++) {
+    Wallace.reload(cannonServo, loaderServo, lastState, pos);
+    Wallace.moveTo(32, lastState, pos);
     cannonServo.write(servoAngles[j]);
-    delay(350);
-    analogWrite(SolenoidPowerPin, fullPower);
+    Wallace.moveTo(encoderPos[j], lastState, pos);
+    analogWrite(SolenoidPowerPin, solenoidPower[i]);
     delay(onTime);
     analogWrite(SolenoidPowerPin, 0);
-    Wallace.reload(cannonServo, loaderServo,lastState, pos);
   }
 
   Wallace.returnHome(lastState, pos);           // finish game
@@ -110,4 +137,6 @@ int j;
   delay(1000);
   digitalWrite(LED, LOW);
 
+  Serial.println("");
+  while (true);
 }
