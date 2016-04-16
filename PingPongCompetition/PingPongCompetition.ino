@@ -97,7 +97,7 @@ void setup() {
   for (i = 0; i < 6; i++) {
     // If the desired distance is less than 109 cm, rewrite for LOW power
     // otherwise, use the default HIGH power
-    if (xTarget_m[i] < 1.09) {
+    if (xTarget_m[i] <= 0.94) {
       solenoidPower[i] = 240;
     }
     launchAngles[i] = Wallace.getLaunchAngle(angleLowerBound, angleUpperBound, xTarget_m[i]);
@@ -127,7 +127,7 @@ void loop() {
     Wallace.moveTo(32, lastState, pos);
     cannonServo.write(servoAngles[j]);
     Wallace.moveTo(encoderPos[j], lastState, pos);
-    analogWrite(SolenoidPowerPin, solenoidPower[i]);
+    analogWrite(SolenoidPowerPin, solenoidPower[j]);
     delay(onTime);
     analogWrite(SolenoidPowerPin, 0);
   }
