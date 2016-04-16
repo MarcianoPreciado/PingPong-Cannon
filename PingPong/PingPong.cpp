@@ -58,12 +58,13 @@ Cannon::Cannon(void)
 
 double Cannon::landingDistanceIdealHIGH(double launchAngle)
 {
-
-	double c1 = -0.0000052535882370;											// <---Coefficients to a polynomial model which represents
-	double c2 = 0.0001893283661070;												// a more accurate projectile effected by air resistance
-	double c3 = 0.0057340214501177;
-	double c4 = -697.6695215519382600;
-	double c5 = -2.9136676017969174;
+	// Coefficients to a polynomial model which represents
+	// a more accurate projectile effected by air resistance
+	double c1 = -0.0000074383164928;
+	double c2 = 0.0004726444875278;
+	double c3 = -0.0068665036345123;
+	double c4 = 28.5179023972189400;
+	double c5 = 1.2225056115931041;
 
 	double x = launchAngle;
 	return c1*(pow(x, 3) - c4) + c2*(pow(x, 2) - c4) + c3*(x - c4) + c5;		// 5th degree poynomial representation of launchAngle -> landing distance
@@ -71,12 +72,13 @@ double Cannon::landingDistanceIdealHIGH(double launchAngle)
 
 double Cannon::landingDistanceIdealLOW(double launchAngle)
 {
-
-	double c1 = -0.0000024279184651;											// <---Coefficients to a polynomial model which represents
-	double c2 = 0.0000203453579027;												// a more accurate projectile effected by air resistance
-	double c3 = 0.0002627581564651;
-	double c4 = -1001.4983958651933000;
-	double c5 = 1.1199695607539515;
+	// Coefficients to a polynomial model which represents
+	// a more accurate projectile effected by air resistance
+	double c1 = -0.0000029877381725;
+	double c2 = 0.0000596524928115;
+	double c3 = 0.0001761960876890;
+	double c4 = 34.0071647338913220;
+	double c5 = 1.3792162500554557;
 	double x = launchAngle;
 	return c1*(pow(x, 3) - c4) + c2*(pow(x, 2) - c4) + c3*(x - c4) + c5;		// 5th degree poynomial representation of launchAngle -> landing distance
 }
@@ -93,10 +95,10 @@ double Cannon::landingDistanceIdealLOW(double launchAngle)
 
 double Cannon::servoAngle(double launchAngle)
 {
-	double a = 0.034915161132756;					// <---Coefficients to an inverse sinusoidal model which 
-	double b = 0.015053057998110 * 1000;			// represents a thetaL vs. thetaS function
-	double y_critical = 49.89238602;
-	double x_critical = 54.03235397231884;
+	double a = 0.034687802966966;					// <---Coefficients to an inverse sinusoidal model which 
+	double b = 14.580081261985310;					// represents a thetaL vs. thetaS function
+	double y_critical = 50.222658102062951;			//the critical values represent the coordinates of the critical point of f(thetaS) = A*sin(B*thetaS+C)+D
+	double x_critical = 55.439655033345026;			// a = A/1000, b = B/1000, y_critical = D, x_critical was found using fzero of A*sin(B*thetaS+C)
 	double thetaS = 1000 / b * asin((launchAngle / 1000 - y_critical / 1000) / a) + x_critical;
 	return thetaS;
 }
@@ -111,24 +113,27 @@ double Cannon::getLaunchAngle(double angleLowerBound, double angleUpperBound, do
 	double maxError = 0.001;									// [m]
 	double midVal = (angleLowerBound + angleUpperBound) / 2;	// [deg]
 	double launchAngle;											
-	double position;
+	double guess;
 	// Choosing correct trajectory function
-	if (target <= 0.94)
-		position = landingDistanceIdealLOW(midVal);			
-	else
-		position = landingDistanceIdealHIGH(midVal);
-
-	if (fabs(target - position) <= maxError)
+	if (target <= 0.94) {
+		guess = landingDistanceIdealLOW(midVal);
+	}
+	else {
+		guess = landingDistanceIdealHIGH(midVal);
+	}
+	// If the guess is within acceptable error, return the guess.
+	if (fabs(target - guess) <= maxError)
 	{
 		launchAngle = midVal;
 	}
+	// Otherwise, continue binary search, and modify the boundaries.
 	else
 	{
-		if (position > target)
+		if (guess > target)
 		{
 			launchAngle = getLaunchAngle(midVal, angleUpperBound, target);
 		}
-		else if (position < target)
+		else if (guess < target)
 		{
 			launchAngle = getLaunchAngle(angleLowerBound, midVal, target);
 		}
@@ -152,14 +157,14 @@ int Cannon::reload(Servo &servo_aim, Servo &servo_loader, bool &lastState, int &
 	delay(10);
 	while (!digitalRead(bumperR));					// (Debounce)			
 	Serial.println("Reload Break");
-	delay(25);										// Apply the break.
+	delay(25);										// Apply the break:
 	digitalWrite(MotorDirectionPin, LEFT);			// Changes direction to LEFT
 	analogWrite(MotorPowerPin, fullPower);			// Moves cannon slightly left to unpress button
 	delay(50);
 	analogWrite(MotorPowerPin, 0);
 	pos = 38;
 	lastState = (analogRead(IR) > 500);
-	// Reload the Cannon.
+	// Cannon Reload Sequence and return 0
 	delay(90);
 	servo_loader.write(0);
 	delay(500);
@@ -174,7 +179,7 @@ int Cannon::reload(Servo &servo_aim, Servo &servo_loader, bool &lastState, int &
 * Moves the Cannon to the desired Z Coordinate
 */
 
-int Cannon::moveTo(int zCoordinate, bool &lastState, int &pos)
+int Cannon::moveTo(int zCoordinate, bool &lastState, int &pos, bool stop)
 {
 	const bool white = 0;
 	const bool black = 1;
@@ -236,17 +241,20 @@ int Cannon::moveTo(int zCoordinate, bool &lastState, int &pos)
 		lastState = state;
 	}
 
-	// Apply the break.
-	if (state == white)
-	{
-		delay(270);
+	// Apply the break if stop was selected.
+	if (stop) {
+		if (state == white)
+		{
+			delay(270);
+		}
+		delay(85);
+		digitalWrite(MotorDirectionPin, !DIR);
+		analogWrite(MotorPowerPin, fullPower);
+		delay(50);
 	}
-	delay(85);
-	digitalWrite(MotorDirectionPin, !DIR);
-	analogWrite(MotorPowerPin, fullPower);
-	delay(50);
 	analogWrite(MotorPowerPin, 0);
 	lastState = state;
+
 	return 0;
 }
 

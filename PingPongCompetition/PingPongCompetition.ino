@@ -1,9 +1,6 @@
 /*
   Created by: Marciano C. Preciado, Matt D. Ludlow
-  Latest Update: 04-15-16
-
-  This libary was created to facilitate the necessary calculations
-  to operate the ME 1010 ping-pong cannon.
+  Latest Update: 04-16-16
 
    _PINS_    _HARDWARE_        _VARIABLE_NAME_
   1  RX
@@ -36,48 +33,49 @@
 #include "PingPong.h"
 
 #define pi 3.1415923565
-Cannon Wallace;
-Servo cannonServo;
-Servo loaderServo;
 
-const int LED = 13;
+Cannon Wallace;               // Initializes Cannon instance (named Wallace)
+Servo cannonServo;            // Initializes the servo used for aiming.
+Servo loaderServo;            // Initializes the servo used for reloading.
 
-int angleLowerBound = 33;
+const int LED = 13;           // Defines LED as 13
+
+int angleLowerBound = 33;     // Used for 'getLaunchAngle' function
 int angleUpperBound = 83;
-byte k = 0;
 
-double encoderPos[6];
-double xTarget_HB[6];
-double xTarget_LB[6];
-double xTarget_mm[6];
-double xTarget_m[6];
-int solenoidPower[6] = {255, 255, 255, 255, 255, 255}; //default power is HIGH
-int servoAngles[6];
-int pos;
-bool lastState;
+double encoderPos[6];                                     // Vector for storing encoder positions
+int solenoidPower[6] = {255, 255, 255, 255, 255, 255};    // default power is HIGH
+int servoAngles[6];                                       // Vector for storing computed servo angles
+int pos;                                                  // Stores position
+bool lastState;                                           // Stores the color of the last recorded color bar. (Black = 1, White = 0)
 
 void setup() {
-  pinMode(MotorDirectionPin, OUTPUT);
+  pinMode(MotorDirectionPin, OUTPUT);       // Setting the mode for each pin
   pinMode(SolenoidDirectionPin, OUTPUT);
   pinMode(bumperL, INPUT_PULLUP);
   pinMode(bumperR, INPUT_PULLUP);
   pinMode(LED, OUTPUT);
 
-  Serial.begin(9600);               // initialize communication
-  Serial.write(97);                 // send 'a' confirmation value
+  Serial.begin(9600);                       // initialize serial communication
+  Serial.write(97);                         // send the confirmation value ('a')
+
+  double xTarget_HB[6];                     // Temporary vectors for storing recieved values
+  double xTarget_LB[6];                     //    and steps between computations
+  double xTarget_mm[6];
+  double xTarget_m[6];
   double launchAngles[6];
 
   int i;
-
   for (i = 0; i < 6; i++) {
-    while (Serial.available() < 3);
-    encoderPos[i] = Serial.read();
+    while (Serial.available() < 3);       // Wait to receive all 3 values
+    encoderPos[i] = Serial.read();        // Read and store the values
     xTarget_HB[i] = Serial.read();
     xTarget_LB[i] = Serial.read();
 
-    xTarget_mm[i] = (256 * xTarget_HB[i]) + xTarget_LB[i];
-    xTarget_m[i] = (xTarget_mm[i] / 1000);
+    xTarget_mm[i] = (256 * xTarget_HB[i]) + xTarget_LB[i];      // Converts messages into a target distance in [mm]
+    xTarget_m[i] = (xTarget_mm[i] / 1000);                      // Converts target distance to [m]
 
+    //Sends final vaules back to MATLAB
     Serial.print("For target ");
     Serial.print(i + 1);
     Serial.print(",drive to stripe ");
@@ -85,20 +83,17 @@ void setup() {
     Serial.print(", and aim for ");
     Serial.print(xTarget_m[i], 3);
     Serial.println(". ");
-
   }
 
-  Wallace.returnHome(lastState, pos);
+  Wallace.returnHome(lastState, pos);                           // Sends the cannon to the home position
   Serial.println("Initializing IR LED Protocol");
-  digitalWrite(LED, HIGH);
+  digitalWrite(LED, HIGH);                                      // Start Timer
   delay(1000);
   digitalWrite(LED, LOW);
 
   for (i = 0; i < 6; i++) {
-    // If the desired distance is less than 109 cm, rewrite for LOW power
-    // otherwise, use the default HIGH power
-    if (xTarget_m[i] <= 0.94) {
-      solenoidPower[i] = 240;
+    if (xTarget_m[i] <= 0.94) {                                // If the desired distance is less than or equal to 94 cm, rewrite for LOW(240) power
+      solenoidPower[i] = 240;                                  //   rather than use the default power: HIGH(255)
     }
     launchAngles[i] = Wallace.getLaunchAngle(angleLowerBound, angleUpperBound, xTarget_m[i]);
     servoAngles[i] = Wallace.servoAngle(launchAngles[i]);
@@ -109,24 +104,25 @@ void setup() {
     Serial.println(" [deg]");
   }
 
-  cannonServo.attach(9);            // attach servos
+  cannonServo.attach(9);            // Attach servos to required pins, and write them to starting positions.
   loaderServo.attach(10);
   loaderServo.write(20);
   cannonServo.write(35);
 }
 
 void loop() {
-  int j;
   cannonServo.write(servoAngles[0]);
-  Wallace.moveTo(encoderPos[0], lastState, pos);
+  Wallace.moveTo(encoderPos[0], lastState, pos, true);
+
   analogWrite(SolenoidPowerPin, solenoidPower[0]);
   delay(onTime);
   analogWrite(SolenoidPowerPin, 0);
+  int j;
   for (j = 1; j < 6; j++) {
     Wallace.reload(cannonServo, loaderServo, lastState, pos);
-    Wallace.moveTo(32, lastState, pos);
+    Wallace.moveTo(32, lastState, pos, false);
     cannonServo.write(servoAngles[j]);
-    Wallace.moveTo(encoderPos[j], lastState, pos);
+    Wallace.moveTo(encoderPos[j], lastState, pos, true);
     analogWrite(SolenoidPowerPin, solenoidPower[j]);
     delay(onTime);
     analogWrite(SolenoidPowerPin, 0);
@@ -136,7 +132,6 @@ void loop() {
   digitalWrite(LED, HIGH);
   delay(1000);
   digitalWrite(LED, LOW);
-
   Serial.println("");
   while (true);
 }

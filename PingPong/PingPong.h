@@ -78,7 +78,7 @@ public:
 	int reload(Servo &servo_aim, Servo &servo_loader, bool &lastState, int &pos);
 
 	// Moves the platform to the given coordinate
-	int moveTo(int zCoordinate, bool &lastState, int &pos);
+	int moveTo(int zCoordinate, bool &lastState, int &pos, bool stop);
 
 	//Moves the platform to the home position
 	int returnHome(bool &lastState, int &pos);
