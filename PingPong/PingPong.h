@@ -1,6 +1,6 @@
 /*
-* Created by: Marciano C. Preciado
-* Latest Update: 03-05-16
+* Created by: Marciano C. Preciado, Matt D. Ludlow
+* Latest Update: 04-15-16
 *
 * This libary was created to facilitate the necessary calculations
 * to operate the ME 1010 ping-pong cannon.
@@ -14,11 +14,11 @@
 *	6  *~		Solenoid Power		SolenoidPowerPin
 *	7			Solenoid Direction	SolenoidDirectionPin
 *	8
-*	9  *~		Aiming Servo		aim		(Servo Instance) 
-*	10 *~		Loader Servo		loader	(Servo Instance) 
+*	9  *~		Aiming Servo		cannonServo		(Servo Instance)
+*	10 *~		Loader Servo		loaderServo	(Servo Instance)
 *	11 *~		Right Bumper		bumperR
 *	12			Left Bumper			bumperL
-*	13
+*	13			IR LED				LED
 *
 *	A0
 *	A1
@@ -55,15 +55,16 @@ const int IR = A5;
 //---------------------------------//
 
 
-class Cannon{
+class Cannon {
 
 public:
 
 	// Preparations for cannon:
 	Cannon(void); //Constructor
-	
+
 	// Function to find an accurate landing distance for a given launch angle:
-	double landingDistanceIdeal(double launchAngle);
+	double landingDistanceIdealHIGH(double launchAngle);
+	double landingDistanceIdealLOW(double launchAngle);
 
 	// Function to find the Servo Angle for a given Launch Angle:
 	double servoAngle(double launchAngle);
@@ -77,7 +78,7 @@ public:
 	int reload(Servo &servo_aim, Servo &servo_loader, bool &lastState, int &pos);
 
 	// Moves the platform to the given coordinate
-	int moveTo(int zCoordinate, bool &lastState, int &pos);
+	int moveTo(int zCoordinate, bool &lastState, int &pos, bool stop);
 
 	//Moves the platform to the home position
 	int returnHome(bool &lastState, int &pos);
