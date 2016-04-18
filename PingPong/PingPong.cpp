@@ -60,11 +60,11 @@ double Cannon::landingDistanceIdealHIGH(double launchAngle)
 {
 	// Coefficients to a polynomial model which represents
 	// a more accurate projectile effected by air resistance
-	double c1 = -0.0000074383164928;
-	double c2 = 0.0004726444875278;
-	double c3 = -0.0068665036345123;
-	double c4 = 28.5179023972189400;
-	double c5 = 1.2225056115931041;
+	double c1 = -0.0000015953768248;
+	double c2 = -0.0000846188736932;
+	double c3 = 0.0011130901399068;
+	double c4 = -4.8775853991479501;
+	double c5 = 1.6279903018639805;
 
 	double x = launchAngle;
 	return c1*(pow(x, 3) - c4) + c2*(pow(x, 2) - c4) + c3*(x - c4) + c5;		// 5th degree poynomial representation of launchAngle -> landing distance
@@ -74,11 +74,11 @@ double Cannon::landingDistanceIdealLOW(double launchAngle)
 {
 	// Coefficients to a polynomial model which represents
 	// a more accurate projectile effected by air resistance
-	double c1 = -0.0000029877381725;
-	double c2 = 0.0000596524928115;
-	double c3 = 0.0001761960876890;
-	double c4 = 34.0071647338913220;
-	double c5 = 1.3792162500554557;
+	double c1 = -0.0000017643496539;
+	double c2 = -0.0000579257365502;
+	double c3 = -0.0002178814249680;
+	double c4 = -216.6004993511213600;
+	double c5 = 1.5845729636838506;
 	double x = launchAngle;
 	return c1*(pow(x, 3) - c4) + c2*(pow(x, 2) - c4) + c3*(x - c4) + c5;		// 5th degree poynomial representation of launchAngle -> landing distance
 }
@@ -95,11 +95,11 @@ double Cannon::landingDistanceIdealLOW(double launchAngle)
 
 double Cannon::servoAngle(double launchAngle)
 {
-	double a = 0.034687802966966;					// <---Coefficients to an inverse sinusoidal model which 
-	double b = 14.580081261985310;					// represents a thetaL vs. thetaS function
-	double y_critical = 50.222658102062951;			//the critical values represent the coordinates of the critical point of f(thetaS) = A*sin(B*thetaS+C)+D
+	double a = 0.034766074461727;					// <---Coefficients to an inverse sinusoidal model which 
+	double b = 14.540019926536459;					// represents a thetaL vs. thetaS function
+	double d = 0.050182708411012;			//the critical values represent the coordinates of the critical point of f(thetaS) = A*sin(B*thetaS+C)+D
 	double x_critical = 55.439655033345026;			// a = A/1000, b = B/1000, y_critical = D, x_critical was found using fzero of A*sin(B*thetaS+C)
-	double thetaS = 1000 / b * asin((launchAngle / 1000 - y_critical / 1000) / a) + x_critical;
+	double thetaS = (1000 / b) * asin((launchAngle / 1000 - d) / a) + x_critical;
 	return thetaS;
 }
 

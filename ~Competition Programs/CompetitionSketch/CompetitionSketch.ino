@@ -48,6 +48,7 @@ int solenoidPower[6] = {255, 255, 255, 255, 255, 255};    // default power is HI
 int servoAngles[6];                                       // Vector for storing computed servo angles
 int pos;                                                  // Stores position
 bool lastState;                                           // Stores the color of the last recorded color bar. (Black = 1, White = 0)
+int offset[6] = {1,1,1,1,1,1};
 
 void setup() {
   pinMode(MotorDirectionPin, OUTPUT);       // Setting the mode for each pin
@@ -74,7 +75,8 @@ void setup() {
 
     xTarget_mm[i] = (256 * xTarget_HB[i]) + xTarget_LB[i];      // Converts messages into a target distance in [mm]
     xTarget_m[i] = (xTarget_mm[i] / 1000);                      // Converts target distance to [m]
-
+    if ((xTarget_m[i] >= 0.9))
+      offset[i] = 2;
     //Sends final vaules back to MATLAB
     Serial.print("For target ");
     Serial.print(i + 1);
@@ -84,7 +86,7 @@ void setup() {
     Serial.print(xTarget_m[i], 3);
     Serial.println(". ");
   }
-
+  
   Wallace.returnHome(lastState, pos);                           // Sends the cannon to the home position
   Serial.println("Initializing IR LED Protocol");
   digitalWrite(LED, HIGH);                                      // Start Timer
@@ -107,12 +109,11 @@ void setup() {
   cannonServo.attach(9);            // Attach servos to required pins, and write them to starting positions.
   loaderServo.attach(10);
   loaderServo.write(20);
-  cannonServo.write(35);
 }
 
 void loop() {
   cannonServo.write(servoAngles[0]);
-  Wallace.moveTo(encoderPos[0], lastState, pos, true);
+  Wallace.moveTo(encoderPos[0]-offset[0], lastState, pos, true);
 
   analogWrite(SolenoidPowerPin, solenoidPower[0]);
   delay(onTime);
@@ -122,7 +123,7 @@ void loop() {
     Wallace.reload(cannonServo, loaderServo, lastState, pos);
     Wallace.moveTo(32, lastState, pos, false);
     cannonServo.write(servoAngles[j]);
-    Wallace.moveTo(encoderPos[j], lastState, pos, true);
+    Wallace.moveTo(encoderPos[j]-offset[j], lastState, pos, true);
     analogWrite(SolenoidPowerPin, solenoidPower[j]);
     delay(onTime);
     analogWrite(SolenoidPowerPin, 0);
@@ -133,5 +134,6 @@ void loop() {
   delay(1000);
   digitalWrite(LED, LOW);
   Serial.println("");
+  cannonServo.write(30);
   while (true);
 }

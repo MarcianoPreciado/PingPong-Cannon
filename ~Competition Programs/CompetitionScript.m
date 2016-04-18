@@ -12,7 +12,7 @@ RomeoCOM = serial('COM3','Baudrate',9600);
 
 fopen(RomeoCOM);
 
-RGBarray = imread('blue_B1.bmp');
+RGBarray = imread('blue_A2.bmp');
 
 disp('Click on a target rectangle');
 targetRGB = ColorPicker(RGBarray)
@@ -33,12 +33,12 @@ encoderPos = rowVal/10-6;
 %------closest to 'home' come first and last----%
 coordinateVec = [encoderPos',centroidCols'];    %
 modVec = sortrows(coordinateVec);               %
-coordinateVecOrdered = [modVec(1,:);            %
+coordinateVecOrdered = [modVec(2,:);            %
                         modVec(end,:);          %
                         modVec(end-1,:);        %
                         modVec(end-2,:);        %
                         modVec(end-3,:);        %
-                        modVec(end-4,:)];       %
+                        modVec(1,:)];           %
                                                 %
 encoderPos = coordinateVecOrdered(:,1);         %
 colVal = coordinateVecOrdered(:,2);             %

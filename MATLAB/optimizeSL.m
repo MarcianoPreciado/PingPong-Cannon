@@ -1,13 +1,13 @@
 clc, clear
 
-data = xlsread('Team23_ProjectileData3');
+data = xlsread('Team23_ProjectileData4');
 thetaL = data([1:26],3);
 thetaS = data([1:26],1);
 plot(thetaS,thetaL,'*g');
 hold on
 
 funHandy = @(x) SumOfSquaredErrors(x(1)*sin( x(2)*thetaS + x(3)) + x(4),thetaL);
-x = fminsearch(funHandy,  [35.295221154570015   0.014270109956176  -0.781326676841765  49.924635161389332], []);
+x = fminsearch(funHandy,  [34.766040600493469   0.014540036496013  -0.804644812059125  50.182699140120860], []);
 A = x(1)
 B = x(2)
 C = x(3)
@@ -28,7 +28,6 @@ hold off
 %inflection point
 x = 55.439655033345026;
 y = D;
-load 'optVec';
 thetaS = [25:135];
 sinFunc = @(thetaS)  A*sin( B*thetaS + C) + D;
 

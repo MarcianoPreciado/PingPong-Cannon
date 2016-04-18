@@ -1,7 +1,7 @@
 % Marciano Preciado
 clc,clear
 
-data = xlsread('Team23_ProjectileData3');
+data = xlsread('Team23_ProjectileData4');
 thetaS = data((1:37),1);
 launchAngle = data((1:37),3);
 distanceLOW = data((1:37),4)/100;
@@ -12,19 +12,19 @@ x = xLOW;
 polyNomHandyLOW = @(cLOW) SumOfSquaredErrors(cLOW(1)*(x.^3-cLOW(4)) +cLOW(2)*(x.^2-cLOW(4)) +cLOW(3)*(x-cLOW(4)) + cLOW(5),distanceLOW(10:23));
 cLOW = fminsearch(polyNomHandyLOW,  1e+02*[-0.000000024612570   0.000000265222832  -0.000001118744286  -2.316058981845771   0.014288004727492], []);
 
-xHIGH = launchAngle(7:19);
+xHIGH = launchAngle(11:19);
 x = xHIGH;
-polyNomHandyHIGH = @(cHIGH) SumOfSquaredErrors(cHIGH(1)*(x.^3-cHIGH(4)) +cHIGH(2)*(x.^2-cHIGH(4)) +cHIGH(3)*(x-cHIGH(4)) + cHIGH(5),distanceHIGH(7:19));
+polyNomHandyHIGH = @(cHIGH) SumOfSquaredErrors(cHIGH(1)*(x.^3-cHIGH(4)) +cHIGH(2)*(x.^2-cHIGH(4)) +cHIGH(3)*(x-cHIGH(4)) + cHIGH(5),distanceHIGH(11:19));
 cHIGH = fminsearch(polyNomHandyHIGH, [-0.000005825129850   0.000279436039160   0.001091236775705  11.438866919503834   1.308920238310206], []);
 figure(1)
 axis([25,85,0,1.5]);
-plot(launchAngle(7:19),distanceHIGH(7:19),'*r')
+plot(launchAngle(11:19),distanceHIGH(11:19),'*r')
 hold on
 plot(launchAngle(10:23),distanceLOW(10:23),'*b')
 hold on
 
 x = xHIGH;
-SSEHIGH=SumOfSquaredErrors(distanceHIGH(7:19), cHIGH(1)*(x.^3-cHIGH(4)) +cHIGH(2)*(x.^2-cHIGH(4)) +cHIGH(3)*(x-cHIGH(4)) + cHIGH(5));
+SSEHIGH=SumOfSquaredErrors(distanceHIGH(11:19), cHIGH(1)*(x.^3-cHIGH(4)) +cHIGH(2)*(x.^2-cHIGH(4)) +cHIGH(3)*(x-cHIGH(4)) + cHIGH(5));
 x = xLOW;
 SSELOW=SumOfSquaredErrors(distanceLOW(10:23), cLOW(1)*(x.^3-cLOW(4)) +cLOW(2)*(x.^2-cLOW(4)) +cLOW(3)*(x-cLOW(4)) + cLOW(5));
 
@@ -49,8 +49,8 @@ for n = 1:5
 end
 
 figure
-plot(thetaS,distanceLOW,'*r');
+plot(thetaS(10:23),distanceLOW(10:23),'*b');
 hold on
-plot(thetaS, distanceHIGH,'*b');
+plot(thetaS(11:19), distanceHIGH(11:19),'*r');
 
 
