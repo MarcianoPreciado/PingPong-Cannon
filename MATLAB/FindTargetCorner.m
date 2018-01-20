@@ -10,8 +10,8 @@ for i = 1:row
         topLeft = [RGBarray(i,j,1) RGBarray(i,j,2) RGBarray(i,j,3)];
         [TrueorFalse] = IsColor2(topLeft, targetRGB);
         if TrueorFalse == 1
-            TLcornerRow = i;
-            TLcornerCol = j;
+            TLcornerRow = j;
+            TLcornerCol = i;
             return;
         end
     end
